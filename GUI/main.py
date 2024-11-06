@@ -71,6 +71,10 @@ class MotorControlApp(QWidget):
         self.startButton.clicked.connect(self.sendStartCommand)
         layout.addWidget(self.startButton)
 
+        self.stopButton = QPushButton('STOP')
+        self.stopButton.clicked.connect(self.sendStopCommand)
+        layout.addWidget(self.stopButton)
+
         self.statusLabel = QLabel('Status: Idle')
         layout.addWidget(self.statusLabel)
 
@@ -107,8 +111,9 @@ class MotorControlApp(QWidget):
         if self.ser is not None:
             self.ser.write((command + '\n').encode())
             time.sleep(0.1)  # Komutların gönderilmesi arasında biraz bekleyin
-            response = self.ser.readline().decode().strip()
-            self.statusLabel.setText(f"Status: {response}")
+            self.response = self.ser.readline().decode().strip()
+            print(self.response)
+            self.statusLabel.setText(f"Status: {self.response}")
         else:
             QMessageBox.critical(self, "Error", "Serial port not connected.")
             self.statusLabel.setText("Status: Not Connected")
@@ -133,6 +138,21 @@ class MotorControlApp(QWidget):
             self.positionLabel.setText(f'Absolute Position: {self.total_distance:.2f} mm')
 
         self.sendCommand("START")
+
+    def sendStopCommand(self):
+        self.current_pos = self.readPos()
+        steps = self.stepsInput.text()
+        self.total_distance += float(self.current_pos/steps)
+        self.sendCommand(f"STOP")
+        self.positionLabel.setText(f'Absolute Position: {self.total_distance:.2f} mm')
+    
+    def readPos(self):
+        command = f"POS"
+        self.ser.write((command + '\n').encode())
+        response = self.ser.readline().decode().strip()
+        if response.startswith("POS"):
+            numericePos = response.split()[1]
+        return numericePos
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

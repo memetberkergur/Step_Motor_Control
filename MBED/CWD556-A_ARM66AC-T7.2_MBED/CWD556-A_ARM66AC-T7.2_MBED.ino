@@ -14,6 +14,8 @@ float acceleration = 500.0; // Varsayılan ivme
 float milimeter = 1.0;
 int target_position = steps;
 int direction = 1; // Varsayılan yön (1: ileri, -1: geri)
+long currentPos = 0;
+long temp = 0;
 
 bool motorEnabled = false;
 
@@ -83,8 +85,21 @@ void loop() {
       stepper.moveTo(target_position*direction);
       Serial.println("Motor started.");
     }
+    else if (command.equals("STOP")) {
+      motorEnabled = true;
+      target_position = 0;
+      stepper.setCurrentPosition(0);
+      stepper.moveTo(0);
+      Serial.println("Motor stoped.");
+    }
+    else if (command.equals("POS")) {
+      Serial.print("POS ");
+      Serial.println(currentPos);
+    }
   }
-
+  
+  currentPos = stepper.currentPosition();
+  
   if (motorEnabled) {
     if (stepper.distanceToGo() == 0) {
       Serial.println("Motor stopped and locked.");
