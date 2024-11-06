@@ -1,4 +1,5 @@
-('C:\\Users\\Administrator\\Desktop\\berker\\build\\main\\PYZ-00.pyz',
+('C:\\Users\\Administrator\\Desktop\\berker step '
+ 'motor\\build\\main\\PYZ-00.pyz',
  [('PyQt5',
    'C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\PyQt5\\__init__.py',
    'PYMODULE'),

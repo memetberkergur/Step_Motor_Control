@@ -57,7 +57,7 @@ class MotorControlApp(QWidget):
 
         self.stepsLabel = QLabel('Steps:')
         self.stepsInput = QLineEdit()
-        self.stepsInput.setText('1440')
+        self.stepsInput.setText('1480')
         layout.addWidget(self.stepsLabel)
         layout.addWidget(self.stepsInput)
 
@@ -140,19 +140,41 @@ class MotorControlApp(QWidget):
         self.sendCommand("START")
 
     def sendStopCommand(self):
-        self.current_pos = self.readPos()
-        steps = self.stepsInput.text()
-        self.total_distance += float(self.current_pos/steps)
+        temp = 0
+        move = self.moveInput.text()
+        self.moveInput.setText('0')
+        current_pos = self.readPos()
+        steps = float(self.stepsInput.text())
+        temp = float(current_pos)/float(steps)
+        temp = temp - float(move)
+        self.total_distance += temp
         self.sendCommand(f"STOP")
         self.positionLabel.setText(f'Absolute Position: {self.total_distance:.2f} mm')
-    
+
     def readPos(self):
+        move = self.moveInput.text()
+        numericPos = 0
         command = f"POS"
-        self.ser.write((command + '\n').encode())
-        response = self.ser.readline().decode().strip()
-        if response.startswith("POS"):
-            numericePos = response.split()[1]
-        return numericePos
+        
+        while True:  # Değeri doğru okuyana kadar döngüde kal
+            try:
+                self.ser.write((command + '\n').encode())  # POS komutunu gönder
+                response = self.ser.readline().decode().strip()  # Cevabı oku
+                
+                # Gelen yanıt POS ile başlıyorsa işlem yap
+                if response.startswith("POS"):
+                    numericPos = float(response.split()[1])
+                    
+                    # move değeri negatifse numericPos'u çarp
+                    if float(move) < 0:
+                        numericPos = numericPos * -1
+                    break  # Değeri doğru şekilde okuduğunda döngüden çık
+
+            except Exception as e:
+                print("Hata oluştu, tekrar denenecek:", e)
+                # Hata durumunda döngü devam edecek ve tekrar deneyerek POS komutunu gönderecek
+        
+        return numericPos
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
